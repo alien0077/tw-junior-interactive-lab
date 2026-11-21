@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>台灣國中互動探究實驗室 v2.0 — 108課綱深度原理與會考破題</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <!-- 頂部全域導覽列 -->
+  <header class="top-navbar">
+    <div class="nav-left">
+      <button id="btn-home" class="brand-btn" title="回到單元總覽">
+        <span class="brand-badge">108</span>
+        <span class="brand-text">
+          <strong>台灣國中互動探究實驗室</strong>
+          <small>深度原理 × 迷思反例 × 會考破題</small>
+        </span>
+      </button>
+    </div>
+
+    <div class="nav-right">
+      <div class="xp-pill" title="累積學習經驗值與解鎖徽章">
+        <span class="xp-icon">⚡</span>
+        <span>XP <strong id="nav-xp">0</strong></span>
+        <span class="pill-divider">|</span>
+        <span>🏅 <strong id="nav-badges">0</strong></span>
+      </div>
+      <button id="btn-diagnostics" class="btn-secondary">
+        📊 迷思診斷儀表板
+      </button>
+      <button id="btn-back-catalog" class="btn-ghost hidden">
+        ← 返回總覽
+      </button>
+    </div>
+  </header>
+
+  <!-- 主內容區 -->
+  <main class="main-container">
+    <!-- 首頁：單元總覽視圖 -->
+    <section id="catalog-view" class="catalog-view">
+      <div class="hero-banner">
+        <div class="hero-content">
+          <div class="hero-tag">全科 43 單元 100% 完整上線・零選擇題實體互動學習</div>
+          <h1>先看懂「為什麼」，再秒殺會考經典題</h1>
+          <p>
+            融合 <strong>均一微概念鷹架</strong>、<strong>LIS 科學史實驗反例</strong>、<strong>PhET 雙視角透視</strong> 與 <strong>108 課綱素養情境</strong>。
+            每單元完整包含「① 衝突提問 → ② 雙視角操控 → ③ 原理與疑問詳解 → ④ 迷思反例與會考拆題」。
+          </p>
+        </div>
+        <div class="hero-stats">
+          <div class="stat-box">
+            <span class="stat-num" id="hero-ready-units">43</span>
+            <span class="stat-label">全科可互動實驗單元</span>
+          </div>
+          <div class="stat-box">
+            <span class="stat-num" id="hero-total-units">43</span>
+            <span class="stat-label">108 課綱涵蓋率 100%</span>
+          </div>
+          <div class="stat-box">
+            <span class="stat-num" id="hero-mastered-count">0</span>
+            <span class="stat-label">已精熟單元數</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 篩選列 -->
+      <div class="filter-bar">
+        <div class="subject-tabs" role="tablist" aria-label="科目篩選">
+          <button class="filter-tab active" data-subject="all">全部科目</button>
+          <button class="filter-tab" data-subject="math">📐 數學科</button>
+          <button class="filter-tab" data-subject="science">🔬 自然科</button>
+          <button class="filter-tab" data-subject="social">🌍 社會科</button>
+        </div>
+
+        <div class="grade-filters">
+          <label for="grade-select">年級：</label>
+          <select id="grade-select" class="grade-select">
+            <option value="all">全部年級 (七~九)</option>
+            <option value="7">七年級</option>
+            <option value="8">八年級</option>
+            <option value="9">九年級</option>
+          </select>
+
+          <label class="toggle-only-ready">
+            <input type="checkbox" id="chk-only-ready" />
+            <span>僅顯示未精熟單元</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- 單元卡片網格 -->
+      <div id="unit-grid" class="unit-grid"></div>
+    </section>
+
+    <!-- 單元互動工作區視圖 -->
+    <section id="unit-workspace" class="unit-workspace hidden"></section>
+  </main>
+
+  <!-- 學習與迷思診斷儀表板 Modal -->
+  <div id="diagnostics-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="diag-title">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div>
+          <h2 id="diag-title">📊 個人學習進度與迷思診斷儀表板</h2>
+          <p class="modal-subtitle">對齊均一精熟學習追蹤：即時記錄觸發過的迷思反例與破關解法技能</p>
+        </div>
+        <button id="btn-close-diag" class="btn-icon-close" aria-label="關閉">✕</button>
+      </div>
+      <div id="diagnostics-body" class="modal-body"></div>
+      <div class="modal-footer">
+        <button id="btn-export-json" class="btn-secondary">⬇ 複製診斷 JSON</button>
+        <button id="btn-reset-store" class="btn-danger-outline">🗑 重置所有學習紀錄</button>
+        <button id="btn-close-diag-bottom" class="btn-primary">關閉</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast 通知氣泡 -->
+  <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+  <!-- 核心引擎腳本（採全域命名空間，支援 file:// 與 GitHub Pages 直接執行） -->
+  <script defer src="js/store.js"></script>
+  <script defer src="js/catalog.js"></script>
+  <script defer src="js/solver-ui.js"></script>
+  <script defer src="js/sim-engines.js"></script>
+  <script defer src="js/sim-engines-sci-soc.js"></script>
+
+  <!-- Phase 1 六大旗艦互動單元 -->
+  <script defer src="js/units/math-1-1.js"></script>
+  <script defer src="js/units/math-1-3.js"></script>
+  <script defer src="js/units/math-3-4.js"></script>
+  <script defer src="js/units/sci-2-1.js"></script>
+  <script defer src="js/units/sci-3-3.js"></script>
+  <script defer src="js/units/soc-g1-c3.js"></script>
+
+  <!-- Phase 2 & 3 全科剩餘 37 單元（數學 15 + 自然 14 + 社會 8） -->
+  <script defer src="js/units/math-pack.js"></script>
+  <script defer src="js/units/sci-pack.js"></script>
+  <script defer src="js/units/soc-pack.js"></script>
+
+  <!-- 主控制器 -->
+  <script defer src="js/app.js"></script>
+</body>
+</html>
