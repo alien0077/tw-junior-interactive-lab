@@ -638,50 +638,164 @@
     update();
   };
 
-  // 8. 因式分解與十字交乘轉盤
+  // 8. 因式分解與十字交乘全組合互動轉盤（支援首項 ≠ 1 與全組合篩選）
   RENDERERS.m_factor_grid = function (p) {
-    // 目標：x² + 5x + 6 = (x+p)(x+q)
-    var pVal = 1, qVal = 6;
+    var PROBLEMS = [
+      {
+        label: '6x² + 11x + 3',
+        a: 6, b: 11, c: 3,
+        combos: [
+          { p: 6, q: 1, r: 3, s: 1, gcdTrap: '上列 (6x, +3) 有公因數 3 → 可直接淘汰！' },
+          { p: 6, q: 1, r: 1, s: 3, gcdTrap: '' },
+          { p: 3, q: 2, r: 3, s: 1, gcdTrap: '上列 (3x, +3) 有公因數 3 → 可直接淘汰！' },
+          { p: 3, q: 2, r: 1, s: 3, gcdTrap: '' }
+        ]
+      },
+      {
+        label: '6x² − 7x − 3',
+        a: 6, b: -7, c: -3,
+        combos: [
+          { p: 6, q: 1, r: -1, s: 3, gcdTrap: '' },
+          { p: 3, q: 2, r: -3, s: 1, gcdTrap: '上列 (3x, −3) 有公因數 3 → 可直接淘汰！' },
+          { p: 3, q: 2, r: -1, s: 3, gcdTrap: '' },
+          { p: 3, q: 2, r: 1, s: -3, gcdTrap: '' }
+        ]
+      },
+      {
+        label: 'x² + 5x + 6',
+        a: 1, b: 5, c: 6,
+        combos: [
+          { p: 1, q: 1, r: 1, s: 6, gcdTrap: '' },
+          { p: 1, q: 1, r: 2, s: 3, gcdTrap: '' }
+        ]
+      }
+    ];
+    var probIdx = 0;
+    var comboIdx = 0;
+
+    function fmtSign(n) { return n >= 0 ? ('+ ' + n) : ('− ' + Math.abs(n)); }
+    function fmtTermX(n) { return n === 1 ? 'x' : (n + 'x'); }
+
+    function drawArrow(ctx, x1, y1, x2, y2, color) {
+      var ang = Math.atan2(y2 - y1, x2 - x1);
+      ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(x2, y2);
+      ctx.lineTo(x2 - 11 * Math.cos(ang - 0.42), y2 - 11 * Math.sin(ang - 0.42));
+      ctx.lineTo(x2 - 11 * Math.cos(ang + 0.42), y2 - 11 * Math.sin(ang + 0.42));
+      ctx.closePath(); ctx.fill();
+    }
+
     function draw() {
       var ctx = p.ctx;
+      var prob = PROBLEMS[probIdx];
+      var cb = prob.combos[comboIdx];
+      var diag1 = cb.p * cb.s;
+      var diag2 = cb.q * cb.r;
+      var mid = diag1 + diag2;
+      var ok = (mid === prob.b);
+
       ctx.clearRect(0, 0, p.width, p.height);
-      var mid = pVal + qVal;
-      var ok = (pVal * qVal === 6 && mid === 5);
+      ctx.fillStyle = '#0f172a'; ctx.font = 'bold 14px sans-serif'; ctx.textAlign = 'left';
+      ctx.fillText('目標分解：' + prob.label + '（目前試第 ' + (comboIdx + 1) + ' / ' + prob.combos.length + ' 組）', 18, 26);
 
-      ctx.font = 'bold 20px monospace'; ctx.textAlign = 'center';
-      ctx.fillStyle = '#0f172a';
-      ctx.fillText('1x', 130, 105); ctx.fillText(pVal >= 0 ? '+' + pVal : pVal, 250, 105);
-      ctx.fillText('1x', 130, 205); ctx.fillText(qVal >= 0 ? '+' + qVal : qVal, 250, 205);
+      // 左右兩欄數字
+      ctx.font = 'bold 22px monospace'; ctx.textAlign = 'center';
+      ctx.fillStyle = '#1e3a8a';
+      ctx.fillText(fmtTermX(cb.p), 95, 105);
+      ctx.fillText(fmtTermX(cb.q), 95, 205);
+      ctx.fillStyle = '#9a3412';
+      ctx.fillText(fmtSign(cb.r), 235, 105);
+      ctx.fillText(fmtSign(cb.s), 235, 205);
 
-      ctx.strokeStyle = ok ? '#16a34a' : '#f59e0b'; ctx.lineWidth = 3;
-      ctx.beginPath(); ctx.moveTo(155, 100); ctx.lineTo(225, 195); ctx.moveTo(155, 195); ctx.lineTo(225, 100); ctx.stroke();
+      // 彩色交叉箭頭（清楚指出誰乘誰！）
+      drawArrow(ctx, 128, 98, 200, 194, '#2563eb');
+      drawArrow(ctx, 128, 198, 200, 102, '#ea580c');
 
-      ctx.font = 'bold 14px sans-serif'; ctx.textAlign = 'left';
-      ctx.fillStyle = ok ? '#16a34a' : '#dc2626';
-      ctx.fillText('交叉相加 = ' + mid + 'x（目標 +5x）', 300, 145);
-      ctx.fillText('常數相乘 = ' + (pVal * qVal) + '（目標 +6）', 300, 175);
+      // 右側誰乘誰明細
+      ctx.font = 'bold 13px sans-serif'; ctx.textAlign = 'left';
+      ctx.fillStyle = '#2563eb';
+      ctx.fillText('↘ 藍箭頭：(' + fmtTermX(cb.p) + ') × (' + cb.s + ') = ' + diag1 + 'x', 290, 96);
+      ctx.fillStyle = '#ea580c';
+      ctx.fillText('↗ 橘箭頭：(' + fmtTermX(cb.q) + ') × (' + cb.r + ') = ' + diag2 + 'x', 290, 126);
+
+      ctx.strokeStyle = '#cbd5e1'; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(290, 140); ctx.lineTo(525, 140); ctx.stroke();
+
+      ctx.fillStyle = ok ? '#15803d' : '#dc2626';
+      ctx.font = 'bold 14px sans-serif';
+      ctx.fillText('交叉相加 = ' + mid + 'x' + (ok ? ' ＝ 目標 ' + prob.b + 'x ✔' : ' ≠ 目標 ' + prob.b + 'x ✖'), 290, 165);
+
+      // 直向檢查標註
+      ctx.fillStyle = '#475569'; ctx.font = '12px sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText('直乘=' + (cb.p * cb.q) + 'x²', 95, 238);
+      ctx.fillText('直乘=' + (cb.r * cb.s), 235, 238);
+
+      if (cb.gcdTrap) {
+        ctx.fillStyle = '#b91c1c'; ctx.font = 'bold 12px sans-serif'; ctx.textAlign = 'left';
+        ctx.fillText('🚫 ' + cb.gcdTrap, 290, 198);
+      }
+
       if (ok) {
-        ctx.strokeStyle = '#16a34a'; ctx.lineWidth = 2;
-        ctx.strokeRect(95, 75, 190, 44);
-        ctx.strokeRect(95, 175, 190, 44);
-        ctx.fillText('✔ 橫著讀出：(x + ' + pVal + ')(x + ' + qVal + ')', 100, 265);
+        ctx.strokeStyle = '#16a34a'; ctx.lineWidth = 2.5;
+        ctx.strokeRect(52, 76, 222, 42);
+        ctx.strokeRect(52, 176, 222, 42);
+        ctx.fillStyle = '#15803d'; ctx.font = 'bold 15px sans-serif'; ctx.textAlign = 'left';
+        ctx.fillText('✅ 橫著讀出：(' + fmtTermX(cb.p) + ' ' + fmtSign(cb.r) + ')(' + fmtTermX(cb.q) + ' ' + fmtSign(cb.s) + ')', 52, 286);
+      } else {
+        ctx.fillStyle = '#64748b'; ctx.font = '13px sans-serif'; ctx.textAlign = 'left';
+        ctx.fillText('👇 點下方切換下一組 (p, q, r, s) 組合試試看！', 52, 286);
       }
     }
-    p.controlsEl.innerHTML =
-      '<div class="slider-group"><label>上輪常數 p：<strong id="mfg-p">1</strong></label><input id="mfg-sp" type="range" min="1" max="6" step="1" value="1"></div>' +
-      '<div class="slider-group"><label>下輪常數 q：<strong id="mfg-q">6</strong></label><input id="mfg-sq" type="range" min="1" max="6" step="1" value="6"></div>';
+
+    function renderControls() {
+      var prob = PROBLEMS[probIdx];
+      var probBtns = PROBLEMS.map(function (pr, i) {
+        return '<button class="btn-light mfg-prob' + (i === probIdx ? ' active' : '') + '" data-i="' + i + '" style="' + (i === probIdx ? 'background:#1e293b;color:#fff;' : '') + '">' + pr.label + '</button>';
+      }).join('');
+      var comboBtns = prob.combos.map(function (cb, i) {
+        return '<button class="btn-light mfg-combo" data-c="' + i + '" style="' + (i === comboIdx ? 'background:#2563eb;color:#fff;' : '') + '">組合 ' + (i + 1) + '：(' + cb.p + ',' + cb.r + ')/(' + cb.q + ',' + cb.s + ')</button>';
+      }).join('');
+      p.controlsEl.innerHTML =
+        '<div style="display:flex;gap:6px;flex-wrap:wrap;width:100%;margin-bottom:6px;"><strong style="font-size:0.82rem;align-self:center;">選題：</strong>' + probBtns + '</div>' +
+        '<div style="display:flex;gap:6px;flex-wrap:wrap;width:100%;"><strong style="font-size:0.82rem;align-self:center;">試組合：</strong>' + comboBtns + '</div>';
+
+      p.controlsEl.querySelectorAll('.mfg-prob').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          probIdx = parseInt(btn.getAttribute('data-i'), 10);
+          comboIdx = 0;
+          p.onInteract();
+          renderControls();
+          update();
+        });
+      });
+      p.controlsEl.querySelectorAll('.mfg-combo').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          comboIdx = parseInt(btn.getAttribute('data-c'), 10);
+          p.onInteract();
+          renderControls();
+          update();
+        });
+      });
+    }
+
     function update() {
-      p.controlsEl.querySelector('#mfg-p').textContent = pVal;
-      p.controlsEl.querySelector('#mfg-q').textContent = qVal;
-      var ok = (pVal * qVal === 6 && pVal + qVal === 5);
+      var prob = PROBLEMS[probIdx];
+      var cb = prob.combos[comboIdx];
+      var mid = cb.p * cb.s + cb.q * cb.r;
+      var ok = (mid === prob.b);
       p.readoutEl.innerHTML =
-        '題目分解：<span class="math-expr">x² + 5x + 6</span><br>' +
-        '目前展開：<span class="math-expr">x² + ' + (pVal + qVal) + 'x + ' + (pVal * qVal) + '</span><br><br>' +
-        (ok ? '🎉 <strong>解鎖成功！</strong>交叉檢查中間項，寫答案永遠「橫著讀出兩條框」：(x + ' + pVal + ')(x + ' + qVal + ')！' : '👆 轉動兩輪找出「相乘 = 6、相加 = 5」的組合！');
+        '題目：<span class="math-expr">' + prob.label + '</span>（共列出 <strong>' + prob.combos.length + ' 種</strong> 拆法組合）<br>' +
+        '交叉算式：<span style="color:#2563eb;">(' + fmtTermX(cb.p) + ')×(' + cb.s + ')</span> + <span style="color:#ea580c;">(' + fmtTermX(cb.q) + ')×(' + cb.r + ')</span> = <strong>' + mid + 'x</strong><br><br>' +
+        (ok
+          ? '🎉 <strong>配對成功！</strong>因為交叉和剛好等於 ' + prob.b + 'x，寫答案時永遠<strong>橫著讀出兩條綠框</strong>：<code>(' + fmtTermX(cb.p) + ' ' + fmtSign(cb.r) + ')(' + fmtTermX(cb.q) + ' ' + fmtSign(cb.s) + ')</code>！'
+          : (cb.gcdTrap
+            ? '🚫 <strong>秒殺排除技巧：</strong>' + cb.gcdTrap + ' 原式已無公因式，同一橫排不可能有公因數！'
+            : '✖ 交叉和為 <strong>' + mid + 'x</strong>，不等於目標 <strong>' + prob.b + 'x</strong>，請換試另一組 (p, q, r, s)！'));
       draw();
     }
-    p.controlsEl.querySelector('#mfg-sp').addEventListener('input', function (e) { pVal = parseInt(e.target.value, 10); p.onInteract(); update(); });
-    p.controlsEl.querySelector('#mfg-sq').addEventListener('input', function (e) { qVal = parseInt(e.target.value, 10); p.onInteract(); update(); });
+    renderControls();
     update();
   };
 

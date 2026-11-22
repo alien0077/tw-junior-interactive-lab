@@ -174,6 +174,7 @@
 
         '<nav class="hb-toc" aria-label="講義目錄">' +
           '<button class="hb-toc-btn" data-target="hb-sec-1" type="button">一、基本觀念</button>' +
+          '<button class="hb-toc-btn" data-target="hb-sec-vis" type="button">🎨 互動圖例與動畫</button>' +
           '<button class="hb-toc-btn" data-target="hb-sec-2" type="button">二、' + types.length + ' 大常見題型</button>' +
           '<button class="hb-toc-btn" data-target="hb-sec-3" type="button">三、方法判斷</button>' +
           '<button class="hb-toc-btn" data-target="hb-sec-4" type="button">四、常見錯誤</button>' +
@@ -182,6 +183,17 @@
         '</nav>' +
 
         conceptHtml +
+
+        '<section id="hb-sec-vis" class="hb-section hb-vis-section">' +
+          '<div class="hb-section-header">' +
+            '<span class="hb-sec-num" style="background:#0ea5e9;">圖</span>' +
+            '<div>' +
+              '<h3 id="hb-vis-title">🎨 核心題型互動圖例與組合推演</h3>' +
+              '<div id="hb-vis-subtitle" style="font-size:0.84rem;color:#64748b;margin-top:2px;"></div>' +
+            '</div>' +
+          '</div>' +
+          '<div id="hb-vis-mount"></div>' +
+        '</section>' +
 
         '<section id="hb-sec-2" class="hb-section">' +
           '<div class="hb-section-header">' +
@@ -327,8 +339,24 @@
       });
     });
 
+    // 掛載本單元專屬互動圖例／動畫
+    var visCleanup = null;
+    var visSecEl = bodyEl.querySelector('#hb-sec-vis');
+    var visMountEl = bodyEl.querySelector('#hb-vis-mount');
+    var visTitleEl = bodyEl.querySelector('#hb-vis-title');
+    var visSubEl = bodyEl.querySelector('#hb-vis-subtitle');
+    var visMod = global.JuniorHandbookVisuals && global.JuniorHandbookVisuals[unitId];
+    if (visMod && typeof visMod.mount === 'function' && visMountEl) {
+      if (visMod.title && visTitleEl) visTitleEl.textContent = visMod.title;
+      if (visMod.subtitle && visSubEl) visSubEl.textContent = visMod.subtitle;
+      var maybeVisClean = visMod.mount(visMountEl);
+      if (typeof maybeVisClean === 'function') visCleanup = maybeVisClean;
+    } else if (visSecEl) {
+      visSecEl.classList.add('hidden');
+    }
+
     global.JuniorStore.touchInteraction(unitId);
-    return null;
+    return visCleanup;
   }
 
   global.JuniorHandbookUI = {
