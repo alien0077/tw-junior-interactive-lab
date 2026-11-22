@@ -3,106 +3,153 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>台灣國中互動探究實驗室 v2.0 — 108課綱深度原理與會考破題</title>
+  <title>國中知識群島 — 台灣 108 課綱 3D 微縮互動探究圖鑑</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='10' fill='%231e242b'/%3E%3Ctext x='32' y='41' text-anchor='middle' font-family='monospace' font-weight='700' font-size='26' fill='%23f5f1e8'%3E108%3C/text%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Noto+Sans+TC:wght@400;600;700&family=Noto+Serif+TC:wght@700;900&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/styles.css" />
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+    }
+  }
+  </script>
 </head>
 <body>
-  <!-- 頂部全域導覽列 -->
+  <!-- 頂部圖鑑標頭 -->
   <header class="top-navbar">
     <div class="nav-left">
-      <button id="btn-home" class="brand-btn" title="回到單元總覽">
+      <button id="btn-home" class="brand-btn" title="回到 3D 國中知識群島">
         <span class="brand-badge">108</span>
         <span class="brand-text">
-          <strong>台灣國中互動探究實驗室</strong>
-          <small>深度原理 × 迷思反例 × 會考破題</small>
+          <strong>國中知識群島</strong>
+          <small>台灣 108 課綱・立體微縮探索 × 深度原理 × 會考全題型講義</small>
         </span>
       </button>
     </div>
 
     <div class="nav-right">
       <div class="xp-pill" title="累積學習經驗值與解鎖徽章">
-        <span class="xp-icon">⚡</span>
         <span>XP <strong id="nav-xp">0</strong></span>
-        <span class="pill-divider">|</span>
-        <span>🏅 <strong id="nav-badges">0</strong></span>
+        <span class="pill-divider">/</span>
+        <span>徽章 <strong id="nav-badges">0</strong></span>
       </div>
-      <button id="btn-diagnostics" class="btn-secondary">
-        📊 迷思診斷儀表板
+      <button id="btn-toggle-atlas" class="btn-light" title="在 3D 群島探索與全覽帳本目錄之間切換">
+        🗺 全覽索引表
       </button>
-      <button id="btn-back-catalog" class="btn-ghost hidden">
-        ← 返回總覽
+      <button id="btn-diagnostics" class="btn-secondary">
+        📊 迷思診斷簿
+      </button>
+      <button id="btn-back-catalog" class="btn-primary hidden">
+        ← 返回群島
       </button>
     </div>
   </header>
 
-  <!-- 主內容區 -->
-  <main class="main-container">
-    <!-- 首頁：單元總覽視圖 -->
-    <section id="catalog-view" class="catalog-view">
-      <div class="hero-banner">
-        <div class="hero-content">
-          <div class="hero-tag">全科 43 單元 100% 完整上線・零選擇題實體互動學習</div>
-          <h1>先看懂「為什麼」，再秒殺會考經典題</h1>
-          <p>
-            融合 <strong>均一微概念鷹架</strong>、<strong>LIS 科學史實驗反例</strong>、<strong>PhET 雙視角透視</strong> 與 <strong>108 課綱素養情境</strong>。
-            每單元完整包含「① 衝突提問 → ② 雙視角操控 → ③ 原理與疑問詳解 → ④ 迷思反例與會考拆題 → ⑤ 完整講義與各類題型全攻略（含練習詳解與決策流程）」。
-          </p>
-        </div>
-        <div class="hero-stats">
-          <div class="stat-box">
-            <span class="stat-num" id="hero-ready-units">43</span>
-            <span class="stat-label">全科可互動實驗單元</span>
-          </div>
-          <div class="stat-box">
-            <span class="stat-num" id="hero-total-units">43</span>
-            <span class="stat-label">108 課綱涵蓋率 100%</span>
-          </div>
-          <div class="stat-box">
-            <span class="stat-num" id="hero-mastered-count">0</span>
-            <span class="stat-label">已精熟單元數</span>
-          </div>
+  <!-- 視圖一：首頁 3D「國中知識群島」微縮探索世界 -->
+  <section id="world-view" class="world-view">
+    <div class="world-stage-wrap">
+      <div id="world-canvas-mount" class="world-canvas-mount"></div>
+
+      <!-- 左上角手札銘牌 -->
+      <div class="world-hud-title">
+        <div class="world-hud-kicker">ARCHIPELAGO OF KNOWLEDGE · 108</div>
+        <h1>拖曳海面、點擊島嶼，展開國中全科探究</h1>
+        <p>五座專屬地形島嶼收錄 43 單元深度原理、3D 互動模型、264 種會考題型與圖解講義。</p>
+        <div class="world-hud-stats">
+          <span>島嶼 <strong>5</strong></span>
+          <span>單元 <strong id="hero-total-units">43</strong></span>
+          <span>已精熟 <strong id="hero-mastered-count">0</strong></span>
         </div>
       </div>
 
-      <!-- 篩選列 -->
-      <div class="filter-bar">
-        <div class="subject-tabs" role="tablist" aria-label="科目篩選">
-          <button class="filter-tab active" data-subject="all">全部科目</button>
-          <button class="filter-tab" data-subject="math">📐 數學科</button>
-          <button class="filter-tab" data-subject="science">🔬 自然科</button>
-          <button class="filter-tab" data-subject="social">🌍 社會科</button>
+      <!-- 左下角：日夜光照與視角控制 -->
+      <div class="world-hud-controls">
+        <div class="hud-group" role="group" aria-label="日夜光照切換">
+          <button class="hud-seg-btn active" data-tod="day" type="button">☀ 晴晝</button>
+          <button class="hud-seg-btn" data-tod="dusk" type="button">🌇 黃昏</button>
+          <button class="hud-seg-btn" data-tod="night" type="button">🌙 觀星夜</button>
         </div>
-
-        <div class="grade-filters">
-          <label for="grade-select">年級：</label>
-          <select id="grade-select" class="grade-select">
-            <option value="all">全部年級 (七~九)</option>
-            <option value="7">七年級</option>
-            <option value="8">八年級</option>
-            <option value="9">九年級</option>
-          </select>
-
-          <label class="toggle-only-ready">
-            <input type="checkbox" id="chk-only-ready" />
-            <span>僅顯示未精熟單元</span>
-          </label>
-        </div>
+        <button id="btn-reset-camera" class="btn-secondary" type="button">🧭 全覽視角</button>
+        <button id="btn-open-atlas-from-hud" class="btn-light" type="button">📋 43 單元帳本</button>
       </div>
 
-      <!-- 單元卡片網格 -->
-      <div id="unit-grid" class="unit-grid"></div>
-    </section>
+      <!-- 右下角：五座島嶼羅盤直達鍵 -->
+      <div class="world-compass-dock" id="world-compass-dock"></div>
 
-    <!-- 單元互動工作區視圖 -->
-    <section id="unit-workspace" class="unit-workspace hidden"></section>
-  </main>
+      <!-- 右側滑出：航海田野手札抽屜 -->
+      <aside id="island-drawer" class="island-drawer closed" aria-label="島嶼單元手札">
+        <div class="island-drawer-head">
+          <div>
+            <div id="drawer-kicker" class="world-hud-kicker">ISLAND LOG</div>
+            <h2 id="drawer-title">選擇一座知識島嶼</h2>
+            <div id="drawer-subtitle" class="island-drawer-sub">點擊海面上任一座島嶼開始探索</div>
+          </div>
+          <button id="btn-close-drawer" class="btn-icon-close" aria-label="關閉手札">✕</button>
+        </div>
+        <div id="drawer-grade-filters" class="island-drawer-filters">
+          <button class="drawer-grade-btn active" data-grade="all" type="button">全部年級</button>
+          <button class="drawer-grade-btn" data-grade="7" type="button">七年級</button>
+          <button class="drawer-grade-btn" data-grade="8" type="button">八年級</button>
+          <button class="drawer-grade-btn" data-grade="9" type="button">九年級</button>
+        </div>
+        <div id="drawer-unit-list" class="island-drawer-list"></div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- 視圖二：全覽帳本索引（非三欄卡片，採群島分章條目表） -->
+  <section id="catalog-view" class="atlas-index-view hidden">
+    <div class="atlas-index-header">
+      <div>
+        <div class="world-hud-kicker">FIELD LEDGER · FULL 43-UNIT INDEX</div>
+        <h2>國中全科 43 單元航海索引帳本</h2>
+        <p>依五座知識島嶼分章收錄，支援直達「互動實驗／3D 模型」與「完整題型講義」。</p>
+      </div>
+      <button id="btn-back-world-from-atlas" class="btn-primary" type="button">🏝 回到 3D 群島探索</button>
+    </div>
+
+    <div class="filter-bar">
+      <div class="subject-tabs" role="tablist" aria-label="島嶼篩選">
+        <button class="filter-tab active" data-subject="all">全部島嶼 (43)</button>
+        <button class="filter-tab" data-subject="math">📐 數學幾何島 (18)</button>
+        <button class="filter-tab" data-subject="bio">🌿 生物秘境島 (6)</button>
+        <button class="filter-tab" data-subject="physchem">⚗️ 理化實驗島 (8)</button>
+        <button class="filter-tab" data-subject="earth">🌋 地科天文島 (2)</button>
+        <button class="filter-tab" data-subject="social">🧭 社會人文島 (9)</button>
+      </div>
+
+      <div class="grade-filters">
+        <label for="grade-select">年級：</label>
+        <select id="grade-select" class="grade-select">
+          <option value="all">全部年級 (七~九)</option>
+          <option value="7">七年級</option>
+          <option value="8">八年級</option>
+          <option value="9">九年級</option>
+        </select>
+
+        <label class="toggle-only-ready">
+          <input type="checkbox" id="chk-only-ready" />
+          <span>僅顯示未精熟單元</span>
+        </label>
+      </div>
+    </div>
+
+    <div id="unit-grid"></div>
+  </section>
+
+  <!-- 視圖三：單元互動工作區（依學科自動套用製圖台 / 實驗台 / 田野卷宗版面） -->
+  <section id="unit-workspace" class="unit-workspace hidden"></section>
 
   <!-- 學習與迷思診斷儀表板 Modal -->
   <div id="diagnostics-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="diag-title">
     <div class="modal-card">
       <div class="modal-header">
         <div>
-          <h2 id="diag-title">📊 個人學習進度與迷思診斷儀表板</h2>
+          <h2 id="diag-title">📊 個人學習進度與迷思診斷簿</h2>
           <p class="modal-subtitle">對齊均一精熟學習追蹤：即時記錄觸發過的迷思反例與破關解法技能</p>
         </div>
         <button id="btn-close-diag" class="btn-icon-close" aria-label="關閉">✕</button>
@@ -119,7 +166,11 @@
   <!-- Toast 通知氣泡 -->
   <div id="toast-container" class="toast-container" aria-live="polite"></div>
 
-  <!-- 核心引擎腳本（採全域命名空間，支援 file:// 與 GitHub Pages 直接執行） -->
+  <!-- Three.js 3D 世界與 7 大立體教學模型（ES Modules） -->
+  <script type="module" src="js/world/islands-3d.js"></script>
+  <script type="module" src="js/models/lab-3d-models.js"></script>
+
+  <!-- 核心引擎腳本 -->
   <script defer src="js/store.js"></script>
   <script defer src="js/catalog.js"></script>
   <script defer src="js/solver-ui.js"></script>
@@ -145,7 +196,7 @@
   <script defer src="js/units/sci-3-3.js"></script>
   <script defer src="js/units/soc-g1-c3.js"></script>
 
-  <!-- Phase 2 & 3 全科剩餘 37 單元（數學 15 + 自然 14 + 社會 8） -->
+  <!-- Phase 2 & 3 全科剩餘 37 單元 -->
   <script defer src="js/units/math-pack.js"></script>
   <script defer src="js/units/sci-pack.js"></script>
   <script defer src="js/units/soc-pack.js"></script>

@@ -48,6 +48,13 @@
     var hintLevel = unitState.hintsUsedLevel || 0;
     var stageCleanup = null;
 
+    var meta = global.JuniorCatalog && global.JuniorCatalog.getById ? global.JuniorCatalog.getById(unitId) : null;
+    var subjectKey = meta ? meta.subject : 'math';
+    var themeClass = subjectKey === 'science' ? 'theme-science' : (subjectKey === 'social' ? 'theme-social' : 'theme-math');
+    var layoutLabel = subjectKey === 'science'
+      ? '🔬 立體實驗台版面'
+      : (subjectKey === 'social' ? '🧭 博物學田野卷宗版面' : '📐 工程製圖台版面');
+
     var STAGES = [
       { key: 'ENGAGE', num: '1', label: '情境衝突提問' },
       { key: 'EXPLORE', num: '2', label: '雙視角動手探索' },
@@ -57,19 +64,20 @@
     ];
 
     container.innerHTML =
-      '<div class="unit-shell">' +
+      '<div class="unit-shell ' + themeClass + '" data-subject="' + subjectKey + '">' +
         '<div class="unit-header-bar">' +
           '<div>' +
             '<div class="unit-header-meta">' +
               '<span>' + config.badgeText + '</span>' +
+              '<span class="layout-mode-chip">' + layoutLabel + '</span>' +
               '<span id="shell-mastery-badge"></span>' +
             '</div>' +
             '<h2>' + config.title + '</h2>' +
-            '<div style="color:#cbd5e1;font-size:0.88rem;margin-top:4px;">' + config.subtitle + '</div>' +
+            '<div class="unit-subtitle">' + config.subtitle + '</div>' +
           '</div>' +
           '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">' +
             '<button id="shell-handbook-btn" class="btn-secondary">📖 完整題型講義</button>' +
-            '<button id="shell-back-btn" class="btn-ghost">← 返回單元總覽</button>' +
+            '<button id="shell-back-btn" class="btn-ghost">← 返回群島</button>' +
           '</div>' +
         '</div>' +
 
@@ -192,6 +200,51 @@
       var maybeCleanup = null;
       if (stageKey === 'HANDBOOK' && global.JuniorHandbookUI) {
         maybeCleanup = global.JuniorHandbookUI.renderHandbookStage(unitId, stageBodyEl, shellApi);
+      } else if (stageKey === 'EXPLORE' && global.JuniorLab3D && typeof global.JuniorLab3D.hasModel === 'function' && global.JuniorLab3D.hasModel(unitId)) {
+        // 具備 3D 立體教學模型的單元：提供「🧊 3D 立體模型」與「📐 2D 互動實驗」雙模式即時切換
+        var meta3d = global.JuniorLab3D.getMeta(unitId) || { title: '3D 立體模型' };
+        stageBodyEl.innerHTML =
+          '<div class="lab3d-mode-bar">' +
+            '<div><strong>🧊 本單元搭載 Three.js 3D 立體教學模型：</strong><span>' + meta3d.title + '</span></div>' +
+            '<div style="display:flex;gap:6px;flex-wrap:wrap;">' +
+              '<button id="btn-mode-3d" class="btn-light active" type="button">🧊 3D 立體模型觀察</button>' +
+              '<button id="btn-mode-2d" class="btn-light" type="button">📊 2D 實驗模擬與數據</button>' +
+            '</div>' +
+          '</div>' +
+          '<div id="explore-inner-host"></div>';
+
+        var innerHost = stageBodyEl.querySelector('#explore-inner-host');
+        var btn3d = stageBodyEl.querySelector('#btn-mode-3d');
+        var btn2d = stageBodyEl.querySelector('#btn-mode-2d');
+        var innerCleanup = null;
+
+        function mountExploreMode(mode) {
+          if (typeof innerCleanup === 'function') {
+            innerCleanup();
+            innerCleanup = null;
+          }
+          innerHost.innerHTML = '';
+          btn3d.classList.toggle('active', mode === '3d');
+          btn2d.classList.toggle('active', mode === '2d');
+          if (mode === '3d') {
+            innerCleanup = global.JuniorLab3D.mount(unitId, innerHost);
+            global.JuniorStore.touchInteraction(unitId);
+            shellApi.markStageDone('EXPLORE', 35);
+          } else {
+            innerCleanup = config.onRenderStage('EXPLORE', innerHost, shellApi);
+          }
+        }
+
+        btn3d.addEventListener('click', function () { mountExploreMode('3d'); });
+        btn2d.addEventListener('click', function () { mountExploreMode('2d'); });
+        mountExploreMode('3d');
+
+        maybeCleanup = function () {
+          if (typeof innerCleanup === 'function') {
+            innerCleanup();
+            innerCleanup = null;
+          }
+        };
       } else {
         maybeCleanup = config.onRenderStage(stageKey, stageBodyEl, shellApi);
       }
