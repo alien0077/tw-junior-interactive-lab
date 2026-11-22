@@ -100,7 +100,10 @@
         }).join('');
 
         var actionHtml = unit.implemented
-          ? '<button class="btn-primary btn-open-unit" data-id="' + unit.id + '">啟動互動實驗 →</button>'
+          ? '<div style="display:flex;gap:6px;flex-wrap:wrap;">' +
+              '<button class="btn-light btn-open-handbook" data-id="' + unit.id + '">📖 題型講義</button>' +
+              '<button class="btn-primary btn-open-unit" data-id="' + unit.id + '">互動實驗 →</button>' +
+            '</div>'
           : '<button class="btn-light btn-planned-info" data-phase="' + unit.phase + '">查看規格藍圖</button>';
 
         card.innerHTML =
@@ -114,14 +117,21 @@
             '<div class="unit-tags">' + tagsHtml + '</div>' +
           '</div>' +
           '<div class="unit-card-footer">' +
-            '<span>' + (unit.implemented ? '四階段完整實作' : '規格已定案・待排程') + '</span>' +
+            '<span>' + (unit.implemented ? '五階段含完整題型講義' : '規格已定案・待排程') + '</span>' +
             actionHtml +
           '</div>';
 
         var openBtn = card.querySelector('.btn-open-unit');
         if (openBtn) {
           openBtn.addEventListener('click', function () {
-            openUnit(unit.id);
+            openUnit(unit.id, 'ENGAGE');
+          });
+        }
+
+        var hbBtn = card.querySelector('.btn-open-handbook');
+        if (hbBtn) {
+          hbBtn.addEventListener('click', function () {
+            openUnit(unit.id, 'HANDBOOK');
           });
         }
 
@@ -136,7 +146,7 @@
       });
     }
 
-    function openUnit(unitId) {
+    function openUnit(unitId, initialStage) {
       var mod = global.JuniorUnits && global.JuniorUnits[unitId];
       if (!mod || typeof mod.mount !== 'function') {
         SolverUI.showToast('找不到單元模組：' + unitId);
@@ -146,6 +156,7 @@
         currentUnmount();
         currentUnmount = null;
       }
+      global.__juniorPendingInitialStage = initialStage || 'ENGAGE';
       catalogView.classList.add('hidden');
       workspaceView.classList.remove('hidden');
       btnBackCatalog.classList.remove('hidden');
@@ -227,7 +238,7 @@
             return '<div class="diag-unit-row">' +
               '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;">' +
                 '<strong>' + title + '</strong>' +
-                '<span class="badge-status ' + (u.masteryLevel === 'MASTERED' ? 'status-mastered' : 'status-inprogress') + '">' + u.masteryLevel + '｜已完成階段：' + (u.completedStages || []).length + '/4</span>' +
+                '<span class="badge-status ' + (u.masteryLevel === 'MASTERED' ? 'status-mastered' : 'status-inprogress') + '">' + u.masteryLevel + '｜已完成階段：' + (u.completedStages || []).length + '/5</span>' +
               '</div>' +
               '<div style="font-size:0.82rem;color:#64748b;margin-top:4px;">' +
                 '互動次數：' + (u.lastInteractionMetrics ? u.lastInteractionMetrics.interactionCount : 0) +

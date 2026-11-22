@@ -52,7 +52,8 @@
       { key: 'ENGAGE', num: '1', label: '情境衝突提問' },
       { key: 'EXPLORE', num: '2', label: '雙視角動手探索' },
       { key: 'EXPLAIN', num: '3', label: '原理與疑問詳解' },
-      { key: 'EVALUATE', num: '4', label: '迷思反例與破題' }
+      { key: 'EVALUATE', num: '4', label: '迷思反例與破題' },
+      { key: 'HANDBOOK', num: '5', label: '完整講義與題型全攻略' }
     ];
 
     container.innerHTML =
@@ -66,7 +67,8 @@
             '<h2>' + config.title + '</h2>' +
             '<div style="color:#cbd5e1;font-size:0.88rem;margin-top:4px;">' + config.subtitle + '</div>' +
           '</div>' +
-          '<div>' +
+          '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">' +
+            '<button id="shell-handbook-btn" class="btn-secondary">📖 完整題型講義</button>' +
             '<button id="shell-back-btn" class="btn-ghost">← 返回單元總覽</button>' +
           '</div>' +
         '</div>' +
@@ -108,6 +110,13 @@
         global.JuniorApp.goHome();
       }
     });
+
+    var hbBtn = container.querySelector('#shell-handbook-btn');
+    if (hbBtn) {
+      hbBtn.addEventListener('click', function () {
+        switchStage('HANDBOOK');
+      });
+    }
 
     function refreshHeader() {
       var st = global.JuniorStore.getUnitState(unitId);
@@ -180,7 +189,12 @@
       renderStepper();
       refreshHeader();
       stageBodyEl.innerHTML = '';
-      var maybeCleanup = config.onRenderStage(stageKey, stageBodyEl, shellApi);
+      var maybeCleanup = null;
+      if (stageKey === 'HANDBOOK' && global.JuniorHandbookUI) {
+        maybeCleanup = global.JuniorHandbookUI.renderHandbookStage(unitId, stageBodyEl, shellApi);
+      } else {
+        maybeCleanup = config.onRenderStage(stageKey, stageBodyEl, shellApi);
+      }
       if (typeof maybeCleanup === 'function') {
         stageCleanup = maybeCleanup;
       }
@@ -214,7 +228,9 @@
     renderStepper();
     refreshHeader();
     renderHints();
-    switchStage('ENGAGE');
+    var initialStage = global.__juniorPendingInitialStage || 'ENGAGE';
+    global.__juniorPendingInitialStage = null;
+    switchStage(initialStage);
 
     return function unmountShell() {
       if (typeof stageCleanup === 'function') {
